@@ -17,18 +17,21 @@ class Include(dotbot.Plugin):
         return False
 
     def handle(self, directive, data):
-        if not isinstance(data, dict):
-            raise ValueError(
-                f"Cannot handle {type(data)} in directive {self.__name__}")
-        return all(self._handle_config(config, data.get(config)) for config in data)
+        if isinstance(data, dict):
+            return all(self._handle_config(directory, data.get(directory)) 
+                       for directory in data)
+        if isinstance(data, list):
+            return all(self._handle_config(next(iter(directory)), directory)
+                       for directory in data)
+        raise ValueError(f"Cannot handle {type(data)} in directive {self.__name__}")
 
     def _handle_config(self,
-                       config: str,
+                       directory: str,
                        options: dict | Namespace):
         default_options: Namespace = self._context._options
-        config_file = self._resolve_path(parent=self._base_directory,
-                                         child=config)
-        default_options.__setattr__("config_file", config_file)
+        base_directory = self._resolve_path(parent=self._base_directory,
+                                            child=directory)
+        default_options.__setattr__("base_directory", base_directory)
         _options = default_options
         if options is not None:
             _options = self._merge_options(default_options, options)
@@ -43,10 +46,10 @@ class Include(dotbot.Plugin):
         return dispatcher.dispatch(tasks=tasks)
 
     def _merge_options(self, default_options: Namespace, options: dict):
-        if (base_directory := options.get("base_directory")) is not None:
-            base_directory = self._resolve_path(parent=self._base_directory,
-                                                child=base_directory)
-            default_options.__setattr__("base_directory", base_directory)
+        if (config_file := options.get("config_file")) is not None:
+            config_file = self._resolve_path(parent=default_options.base_directory,
+                                             child=config_file)
+            default_options.__setattr__("config_file", config_file)
         if (disable_built_in_plugins := options.get("disable_built_in_plugins")) is not None:
             default_options.__setattr__("disable_built_in_plugins", disable_built_in_plugins)
         if (exit_on_failure := options.get("exit_on_failure")) is not None:
