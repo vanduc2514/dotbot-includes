@@ -8,30 +8,28 @@ from argparse import Namespace
 
 class Include(dotbot.Plugin):
     _directive = "includes"
-    _base_directory: str
 
     def can_handle(self, directive):
-        if directive == self._directive:
-            self._base_directory = self._context.base_directory()
-            return True
-        return False
+        return directive == self._directive
 
     def handle(self, directive, data):
+        base_directory = self._context.base_directory()
         if isinstance(data, dict):
-            return all(self._handle_config(directory, data.get(directory)) 
+            return all(self._handle_config(base_directory, directory, data.get(directory)) 
                        for directory in data)
         if isinstance(data, list):
-            return all(self._handle_config(next(iter(directory)), directory)
+            return all(self._handle_config(base_directory, next(iter(directory)), directory)
                        for directory in data)
         raise ValueError(f"Cannot handle {type(data)} in directive {self.__name__}")
 
     def _handle_config(self,
+                       base_directory: str,
                        directory: str,
                        options: dict):
         default_options: Namespace = self._context._options
-        base_directory = self._resolve_path(parent=self._base_directory,
+        _base_directory = self._resolve_path(parent=base_directory,
                                             child=directory)
-        default_options.__setattr__("base_directory", base_directory)
+        default_options.__setattr__("base_directory", _base_directory)
         _options = default_options
         if options is not None:
             _options = self._merge_options(default_options, options)
