@@ -26,13 +26,23 @@ class Include(dotbot.Plugin):
                        base_directory: str,
                        directory: str,
                        options: dict):
+        if options is None:
+            raise ValueError(f"Could not find config file for {base_directory}")
         default_options: Namespace = self._context._options
         _base_directory = self._resolve_path(parent=base_directory,
                                             child=directory)
         default_options.__setattr__("base_directory", _base_directory)
-        _options = default_options
-        if options is not None:
+        if isinstance(options, str):
+            config_file = self._resolve_path(parent=default_options.base_directory,
+                                             child=options)
+            _options = default_options
+        elif isinstance(options, dict):
+            config_file = self._resolve_path(parent=default_options.base_directory,
+                                             child=options.get("config_file"))
             _options = self._merge_options(default_options, options)
+        else:
+            raise ValueError("Config file is neither a string or a dict")
+        default_options.__setattr__("config_file", config_file)
         # TODO: merge plugins
         dispatcher = Dispatcher(base_directory=_options.base_directory,
                                 only=_options.only,
@@ -44,10 +54,6 @@ class Include(dotbot.Plugin):
         return dispatcher.dispatch(tasks=tasks)
 
     def _merge_options(self, default_options: Namespace, options: dict):
-        if (config_file := options.get("config_file")) is not None:
-            config_file = self._resolve_path(parent=default_options.base_directory,
-                                             child=config_file)
-            default_options.__setattr__("config_file", config_file)
         if (disable_built_in_plugins := options.get("disable_built_in_plugins")) is not None:
             default_options.__setattr__("disable_built_in_plugins", disable_built_in_plugins)
         if (exit_on_failure := options.get("exit_on_failure")) is not None:

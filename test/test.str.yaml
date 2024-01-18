@@ -1,0 +1,7 @@
+- defaults:
+    link:
+      create: true
+      relink: true
+
+- includes:
+    conf: include.create.yaml
