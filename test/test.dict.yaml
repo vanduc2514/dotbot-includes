@@ -4,7 +4,5 @@
       relink: true
 
 - includes:
-    - conf:
+    conf:
       config_file: include.create.yaml
-    - conf:
-      config_file: include.shell.yaml

@@ -27,7 +27,7 @@ class Include(dotbot.Plugin):
 
     def _handle_config(self,
                        directory: str,
-                       options: dict | Namespace):
+                       options: dict):
         default_options: Namespace = self._context._options
         base_directory = self._resolve_path(parent=self._base_directory,
                                             child=directory)
