@@ -1,0 +1,10 @@
+- defaults:
+    link:
+      create: true
+      relink: true
+
+- includes:
+    conf/include.shell.yaml:
+      base_directory: conf
+    conf/include.create.yaml:
+      base_directory: conf
