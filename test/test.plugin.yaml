@@ -1,0 +1,7 @@
+- includes:
+    conf:
+      config_file: include.create.yaml
+      options:
+        only: shell
+        # plugins: 
+        #   - ../../includes.py
