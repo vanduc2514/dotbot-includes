@@ -1,0 +1,8 @@
+- defaults:
+    shell:
+        quiet: true
+
+- includes:
+    conf:
+        config_file: include.shell.yaml
+        # skip_defaults: True

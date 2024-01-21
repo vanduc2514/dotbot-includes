@@ -8,6 +8,7 @@ from argparse import Namespace
 
 class Include(dotbot.Plugin):
     _directive = "includes"
+    _defaults = "defaults"
 
     def can_handle(self, directive):
         return directive == self._directive
@@ -27,10 +28,12 @@ class Include(dotbot.Plugin):
                        directory: str,
                        include_config: dict):
         options: Namespace = self._context.options()
+        skip_defaults = False
         if isinstance(include_config, str):
             config_file = include_config
         elif isinstance(include_config, dict):
             config_file = include_config.get("config_file")
+            skip_defaults = include_config.get("skip_defaults")
             include_options = include_config.get("options")
             if include_options is not None:
                 options.__dict__.update({option: include_options[option]
@@ -40,8 +43,10 @@ class Include(dotbot.Plugin):
             self._log.error("Config for includes must be a string or a dict")
             return False
         # TODO: merge plugins
-        # TODO: use defaults from main ?
         tasks = read_config(self._resolve_path(directory, config_file))
+        if not skip_defaults and self._defaults not in tasks:
+            # if defaults is not at 0 then other plugins can't find it
+            tasks.insert(0, {self._defaults: self._context.defaults()})
         return self._execute_config(directory, tasks, options)
 
     def _execute_config(self,
