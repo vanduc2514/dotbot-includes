@@ -33,14 +33,18 @@ class Includes(dotbot.Plugin):
         skip_defaults = False
         if isinstance(include_config, str):
             config_file = include_config
-        elif isinstance(include_config, dict):
-            config_file = include_config.get("config_file")
-            skip_defaults = include_config.get("skip_defaults")
-            include_options = include_config.get("options")
-            if include_options is not None:
-                options.__dict__.update({option: include_options[option]
-                                         for option in vars(options)
-                                         if include_options.get(option) is not None})
+        elif isinstance(include_config, dict | list):
+            include_configs = []
+            if isinstance(include_config, dict): include_configs.append(include_config)
+            else: include_configs.extend(include_config)
+            for config in include_configs:
+                config_file = config.get("config_file")
+                skip_defaults = config.get("skip_defaults")
+                include_options = config.get("options")
+                if include_options is not None:
+                    options.__dict__.update({option: include_options[option]
+                                            for option in vars(options)
+                                            if include_options.get(option) is not None})
         else:
             self._log.error("Config for includes must be a string or a dict")
             return False
