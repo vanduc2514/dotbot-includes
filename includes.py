@@ -14,13 +14,13 @@ class Include(dotbot.Plugin):
 
     def handle(self, directive, data):
         base_directory = self._context.base_directory()
-        if isinstance(data, dict):
-            return all(self._handle_config(base_directory, directory, data.get(directory)) 
-                       for directory in data)
-        if isinstance(data, list):
-            return all(self._handle_config(base_directory, next(iter(directory)), directory)
-                       for directory in data)
-        raise ValueError(f"Cannot handle {type(data)} in directive {self.__name__}")
+        success = True
+        for directory in data:
+            include_config = data.get(directory)
+            if not self._handle_config(base_directory, directory, include_config):
+                self._log.error(f"An error occoured when execution actions for {directory}")
+                success = False
+        return success
 
     def _handle_config(self,
                        base_directory: str,
